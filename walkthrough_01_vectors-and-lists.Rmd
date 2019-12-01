@@ -1,0 +1,305 @@
+---
+title: "Vectors and lists"
+output: 
+  github_document:
+    toc: true
+editor_options:
+  chunk_output_type: console
+---
+
+Working through [this section](https://jennybc.github.io/purrr-tutorial/bk00_vectors-and-lists.html) of the purrr tutorials
+
+```{r}
+
+library(tidyverse)
+
+```
+    
+  
+---------
+  
+  
+Walking through section
+  
+## Atomic vectors
+  
+Atomic vectors are homogenous 
+```{r}
+
+v_log <- c(TRUE, FALSE, FALSE, TRUE)
+v_int <- 1:4
+v_doub <- 1:4 * 1.2
+v_char <- letters[1:4]
+
+```
+  
+### Excercises
+  
+1. Define the vectors above or similar. Use the family of is._() functions to confirm vector type, e.g. is.logical(). You will need to guess or look some of them up. Long-term, you may wish to explore the rlang::is_() family of functions.
+```{r}
+
+is.character(v_char)
+is.numeric(v_doub)
+is.integer(v_int)
+is.logical(v_log)
+
+```
+  
+2. What do is.numeric(), is.integer(), and is.double() return for the vectors that hold floating point number versus integers?
+```{r}
+
+is.numeric(v_doub)
+is.numeric(v_int)
+
+is.integer(v_doub) # FALSE
+is.integer(v_int)
+
+is.double(v_doub)
+is.double(v_int) # FALSE
+
+```
+
+Can index with a logical vector or with integers  
+```{r}
+
+v_char[c(FALSE, FALSE, TRUE, TRUE)]
+v_char[v_log]
+
+```
+  
+```{r}
+
+v_char[2:3]
+v_char[-4]
+
+```
+
+### Exercises
+
+1. What happens when you request the zero-th element of one of our vectors?
+```{r}
+
+v_char[0]
+
+```
+An atomic vector of length 0.
+  
+2. What happens when you ask for an element that is past the end of the vector, i.e. request x[k] when the length of x is less than k?
+```{r}
+
+v_doub[50]
+
+```
+  
+3. We indexed a vector x with a vector of positive integers that is shorter than x. What happens if the indexing vector is longer than x?
+```{r}
+
+v_char[1:50]
+
+```
+  
+4. We indexed x with a logical vector of the same length. What happen if the indexing vector is shorter than x?
+```{r}
+
+v_doub[c(TRUE, FALSE)]
+
+```
+
+
+----------  
+  
+## Coercion
+  
+Use as._() for explicit coerction
+```{r}
+
+as.integer(v_log)
+as.numeric(v_int)
+as.character(v_doub)
+
+```
+  
+Implicit coercion can be triggered from other actions as well.
+```{r}
+
+v_doub_copy <- v_doub
+
+v_doub_copy[3] <- "uhoh"
+str(v_doub_copy)
+
+```
+  
+Be intentional about type!
+```{r}
+
+big_plans <- rep(NA_integer_, 4)
+str(big_plans)
+
+big_plans[3] <- 5L # L implies double instead of int
+str(big_plans)
+
+```
+
+### Exercises
+  
+1. Recall the hieararchy of the most common atomic vector types: logical < integer < numeric < character. Try to use the as.*() functions to go the wrong way. Call as.logical(), as.integer(), and as.numeric() on a character vector, such as letters. What happens?
+```{r}
+
+as.logical(letters[1:4])
+as.integer(letters[1:4])
+as.numeric(letters[1:4])
+
+```
+So can make anything a character vector, can make anything logical & integer a numeric vector, but (mostly) can't make a character vector logical, integer, or numeric. 
+   
+----------  
+  
+## Lists
+
+Lists are useful if you want:
+
+- An individual atom to be longer than length 1 (i.e. a sublist)
+- Individual atoms of different type
+
+```{r}
+
+x <- list(1:3, c("four", "five"))
+x
+
+y <- list(letters[26:22], transcendental = c(pi, exp(1)), f = function(x) x^2)
+y
+
+```
+  
+### Exercises 
+  
+1. Make the lists x, y, and z as shown above. Use is._() functions to get to know these objects. Try to get some positive and negative results, i.e. establish a few things that x is and is NOT. Make sure to try is.list(), is.vector(), is.atomic(), and is.recursive(). Long-term, you may wish to explore the rlang::is._() family of functions.
+```{r}
+
+x
+is.integer(x)
+is.integer(x[[1]])
+is.list(x)
+is.vector(x)
+is.atomic(x)
+is.recursive(x)
+
+```
+  
+  
+----------
+  
+## List indexing
+  
+3 ways to index a list:
+
+- With a single bracket
+```{r}
+
+x
+x[1]
+x[2]
+
+```
+This will return the specified element, but will always be a list
+
+- With double square brackets
+```{r}
+
+x[[1]]
+y[["transcendental"]]
+
+```
+This returns the "naked" element.
+
+- With the $
+```{r}
+
+y$transcendental
+
+```
+Must specify the component by name with $.
+  
+### Exercises
+  
+1. Use [, [[, and $ to access the second component of the list z, which bears the name “transcendental”. Use the length() and the is.*() functions explored elsewhere to study the result. Which methods of indexing yield the same result vs. different?
+```{r}
+
+y
+single <- y[2]
+double <- y[[2]]
+dollar <- y$transcendental
+
+length(single)
+length(double)
+length(dollar)
+
+is.list(single)
+is.list(double)
+is.atomic(dollar)
+
+```
+
+
+2. Put the same data into an atomic vector and a list:
+```{r}
+
+my_vec <- c(a = 1, b = 2, c = 3)
+my_list <- list(a = 1, b = 2, c = 3)
+
+```
+Use [ and [[ to attempt to retrieve elements 2 and 3 from my_vec and my_list. What succeeds vs. fails? What if you try to retrieve element 2 alone? Does [[ even work on atomic vectors? Compare and contrast the results from the various combinations of indexing method and input object
+```{r, error=TRUE}
+
+my_vec[c(2, 3)]
+my_vec[[c(2, 3)]]
+
+```
+  
+  
+----------
+  
+  
+## Vectorized operations
+  
+Brute force way to square elements in a vector:
+```{r}
+
+n <- 5
+res <- rep(NA_integer_, n)
+
+for(i in seq_len(n)){
+  res[i] <- i ^ 2
+}
+
+res
+
+```
+  
+The R way:
+```{r}
+
+seq_len(n) ^ 2
+
+```
+  
+But this is not possible with lists  
+```{r, error=TRUE}
+
+l_doub <- as.list(v_doub)
+
+exp(l_doub)
+
+```
+  
+So how do we apply a function to each element of a list? By using purrr:map()!
+```{r}
+
+map(l_doub, exp)
+
+```
+
+
+
+
+

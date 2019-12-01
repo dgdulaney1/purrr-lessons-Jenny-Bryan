@@ -1,0 +1,98 @@
+---
+title: "Intro to map() self-learn"
+subtitle: ""
+output:
+  github_document:
+    toc: true
+allow_html: true
+editor_options:
+  chunk_output_type: console
+fig.width: 10
+fig.height: 7
+---
+
+# Setup
+
+```{r}
+
+library(tidyverse)
+library(magrittr)
+library(repurrrsive)
+
+theme_set(theme_light())
+
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE, 
+  warning = FALSE, 
+  fig.width = 10, 
+  fig.height = 7
+  )
+
+```
+
+Create list that can be manipulated throughout this.
+
+```{r}
+
+div_list <- list(list(div = "NLE", teams = c("ATL", "WAS")),
+                 list(div = "NLC", teams = c("PIT", "CHC")),
+                 list(div = "NLW", teams = c("LAD", "SD"))
+                  )
+
+```
+
+# Use position and integer map() shortcuts
+```{r}
+
+div_list %>% 
+  map("div")
+
+```
+
+```{r}
+
+div_list %>% 
+  map(2)
+
+```
+
+# Use a type-specific map
+```{r}
+
+div_list %>% 
+  map_chr("div")
+
+```
+
+# Extract multiple values
+```{r}
+
+div_list %>% 
+  map(extract, c("div", "teams"))
+
+```
+
+# Use `map_dfr()` to return a df instead of a nested list
+```{r, error=TRUE}
+
+div_list %>% 
+  map_dfr(extract, c(1, 2))
+
+```
+
+For some reason, that call isn't working? It seems the same as this, no?
+```{r}
+
+got_chars %>% 
+  map_dfr(extract, c(1, 2, 3, 4, 5))
+
+```
+
+
+
+
+
+
+
+

@@ -1,0 +1,175 @@
+---
+title: "Explore the example lists: Wes Anderson, GoT, GitHub"
+subtitle: ""
+output:
+  github_document:
+    toc: true
+allow_html: true
+editor_options:
+  chunk_output_type: console
+fig.width: 10
+fig.height: 7
+---
+
+# Setup
+
+```{r}
+
+library(tidyverse)
+library(repurrrsive)
+
+theme_set(theme_light())
+
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE, 
+  warning = FALSE, 
+  fig.width = 10, 
+  fig.height = 7
+  )
+
+```
+
+----------
+
+# Inspect and explore
+
+It's important to understand the structure of a list when we're mapping through it, especially
+
+- The length
+- Whether components are homogenous
+- Length/names/types of each nested list
+
+## Indexing
+
+There are 3 ways to index a list
+
+```{r}
+
+x <- list(a = "a", b = 2)
+
+```
+
+
+1. With `$`
+```{r}
+
+x$a
+
+```
+
+2. With `[[`
+```{r}
+
+x[["a"]]
+
+```
+
+This returns the naked element
+
+3. With [
+```{r}
+
+x["a"]
+
+```
+
+This returns a list
+
+## str()
+
+`str()` helps with basic inspection. Especially useful arguments are:
+
+- `list.len`: Max # of elements to display within a level
+- `max.level`: Max level of nesting applied in display
+
+----------
+
+# Wes Anderson color palettes
+
+```{r}
+
+str(wesanderson)
+
+```
+
+A list of 15 different pallettes, each named and each containing 4 character values.
+
+----------
+
+# GoT POV characters
+
+```{r}
+
+str(got_chars, list.len = 3) # list.len = 3 limits # elements shown from first level sublist to 3
+
+```
+
+A list of 30 characters, each character with 18 named sublists containing information on them.
+
+----------
+
+# GitHub users and repos
+
+```{r}
+
+str(gh_users, max.level = 1) 
+
+```
+
+----------
+
+# Exercises
+
+
+1. Read the documentation on `str()`. What does `max.level` control? Apply `str()` to `wesanderson` and/or `got_chars` and experiment with `max.level = 0`, `max.level = 1`, and `max.level = 2`. Which will you use in practice with deeply nested lists?
+```{r}
+
+str(got_chars, max.level = 0)
+
+```
+
+```{r}
+
+str(got_chars, max.level = 1)
+
+```
+
+```{r}
+
+str(got_chars, max.level = 2)
+
+```
+
+2. What does the `list.len` argument of `str()` control? What is its default value? Call `str()` on got_chars and then on a single component of `got_chars` with `list.len` set to a value much smaller than the default. What range of values do you think you’ll use in real life?
+```{r}
+
+str(got_chars, list.len = 1)
+
+```
+
+```{r}
+
+str(got_chars, list.len = 5)
+
+```
+
+
+3. Call `str()` on got_chars, specifying both max.level and list.len.
+```{r}
+
+str(got_chars, max.level = 2, list.len = 5)
+
+```
+
+4. Call `str()` on the first element of `got_chars`, i.e. the first Game of Thrones character. Use what you’ve learned to pick an appropriate combination of `max.level` and `list.len`.
+```{r}
+
+theon <- got_chars[[1]]
+
+str(theon, max.level = 1, list.len = 5)
+
+```
+
+
+

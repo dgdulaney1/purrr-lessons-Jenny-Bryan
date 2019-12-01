@@ -1,0 +1,275 @@
+---
+title: "Intro to map() walkthrough"
+subtitle: ""
+output:
+  github_document:
+    toc: true
+allow_html: true
+editor_options:
+  chunk_output_type: console
+fig.width: 10
+fig.height: 7
+---
+
+
+# Setup
+
+```{r}
+
+library(tidyverse)
+library(repurrrsive)
+library(magrittr)
+
+theme_set(theme_light())
+
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  fig.width = 10, 
+  fig.height = 7
+  )
+
+```
+
+----------
+
+`purrr:map()` is used to apply a function to each element of a list
+
+```{r}
+
+map(1:5, sqrt)
+
+```
+
+So for each element 1, 2, ..., 5, the `sqrt()` function is applied and a list of each `sqrt(.)` is returned.
+
+# Name and position shortcuts
+
+`purrr:map` functions have shortcuts that allow the extraction of elemennts based on name or position.
+
+```{r}
+
+str(got_chars[1:4], list.len = 3)
+
+```
+
+For each sublist in `got_chars`, there is a `$name` element
+
+```{r}
+
+map(got_chars[1:4], "name")
+
+```
+
+An integer can be provided instead of a name
+```{r}
+
+map(got_chars[1:4], 3)
+
+```
+
+And it's easy to use this functionality in a pipe
+```{r}
+
+got_chars[1:4] %>% 
+  map("name")
+
+```
+
+## Exercises
+
+1. Use names() to inspect the names of the list elements associated with a single character. What is the index or position of the playedBy element? Use the character and position shortcuts to extract the playedBy elements for all characters.
+```{r}
+
+names(got_chars[[1]])
+
+```
+
+playedBy is the 18th element.
+
+```{r}
+
+got_chars %>% 
+  map("playedBy")
+
+```
+
+```{r}
+
+got_chars %>% 
+  map(18)
+
+```
+
+2. What happens if you use the character shortcut with a string that does not appear in the lists’ names?
+
+```{r}
+
+got_chars %>% 
+  map(";alskdjf")
+
+```
+
+A NULLED list of equal length to the outermost list is returned.
+
+3. What happens if you use the position shortcut with a number greater than the length of the lists?
+
+```{r}
+
+got_chars %>% 
+  map(50)
+
+```
+
+Same as with the non-name.
+
+4. What if these shortcuts did not exist? Write a function that takes a list and a string as input and returns the list element that bears the name in the string. Apply this to got_chars via map(). Do you get the same result as with the shortcut? Reflect on code length and readability.
+
+```{r}
+
+map_knockoff_str <- function(l, s) l[[s]]
+  
+sapply(got_chars[1:4], map_knockoff_str, s = "name")
+
+```
+
+Less readable! Redundant if it's such a common use case.
+
+5. Write another function that takes a list and an integer as input and returns the list element at that position. Apply this to got_chars via map(). How does this result and process compare with the shortcut?
+
+```{r}
+
+map_knockoff_int <- function(l, i) l[[i]]
+  
+sapply(got_chars[1:4], map_knockoff_int, i = 3)
+
+```
+
+----------
+
+# Type-specific map
+
+Variants of map() like map_chr() will return from a map call the exact type of object you want.
+```{r}
+
+got_chars %>% 
+  map_chr("name")
+
+```
+
+A character vector is returned instead of a list
+
+## Exercises
+
+1. For each character, the second element is named “id”. This is the character’s id in the API Of Ice And Fire. Use a type-specific form of map() and an extraction shortcut to extract these ids into an integer vector.
+```{r}
+
+got_chars %>% 
+  map_int("id")
+
+```
+
+2. Use your list inspection strategies to find the list element that is logical. There is one! Use a type-specific form of map() and an extraction shortcut to extract these values for all characters into a logical vector.
+```{r}
+
+got_chars %>% 
+  map_lgl("alive")
+
+```
+
+Like how `map_chr()` returns a character vector, `map_lgl()` returns a logical vector.
+
+----------
+
+# Extract multiple values
+
+Sometimes instead of just retrieving a single value from each list element (e.g. "name") we want multiple values (e.g. "name", "culture", and "gender").
+
+For a single character, we can use 
+```{r}
+
+got_chars[[3]][c("name", "culture", "gender")]
+
+```
+
+And with `map()`, we have a few options for multiple value extraction:
+
+- **Using `[`**
+
+```{r}
+
+got_chars[1:4] %>% 
+  map(`[`, c("name", "culture", "gender"))
+
+```
+
+- **Using `extract()`**
+
+```{r}
+
+got_chars[1:4] %>% 
+  map(extract, c("name", "culture", "gender"))
+
+```
+
+## Exercises
+
+1. Use your list inspection skills to determine the position of the elements named “name”, “gender”, “culture”, “born”, and “died”. Map `[` or `magrittr::extract()` over users, requesting these elements by position instead of name.
+```{r}
+
+got_chars[[1]] %>% 
+  names(.)
+
+```
+
+```{r}
+
+got_chars[1:4] %>% 
+  map(extract, c(3, 4, 5, 6, 7))
+
+```
+
+----------
+
+# Data frame output
+
+`map_dfr()` allows us to extract multiple values *and* stack the results in a data frame instead of keeping it as a nested list.
+```{r}
+
+got_chars[1:4] %>% 
+  map_dfr(extract, c("name", "culture", "gender"))
+
+```
+
+The variable types in the resulting df are automatically type converted. This can be problematic sometimes, so it's good practice to explicitly type variables.
+```{r}
+
+got_chars %>% {
+  
+  tibble(
+    name = map_chr(., "name"),
+    culture = map_chr(., "culture"),
+    gender = map_chr(., "gender"),
+    id = map_int(., "id"),
+    born = map_chr(., "born"),
+    alive = map_lgl(., "alive")
+  )
+}
+
+```
+
+The curly brackets `{}` call prevents `got_chars` from being passed in as the first argument of `tibble()`.
+
+## Exercises
+
+1. Use `map_dfr()` to create the same data frame as above, but indexing with a vector of positive integers instead of names.
+```{r}
+
+got_chars[1:4] %>%
+  map_dfr(extract, c(3, 5, 4, 2, 6, 8))
+
+```
+
+----------
+
+
